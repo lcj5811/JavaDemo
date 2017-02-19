@@ -22,6 +22,12 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
+/**
+ * @ClassName com.lee.twodimensioncode.Creat2DCode
+ * @description 二维码制作
+ * @author 凌霄
+ * @data 2016年5月31日 上午9:44:08
+ */
 public class Creat2DCode {
 
 	// 图片宽度的一般

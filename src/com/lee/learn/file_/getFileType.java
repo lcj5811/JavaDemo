@@ -9,7 +9,7 @@ import java.util.Map.Entry;
 
 /**
  * @ClassName com.lee.learn.file_.getFileType
- * @description
+ * @description 识别文件类型
  * @author 凌霄
  * @data 2016年10月7日 上午11:57:43
  */

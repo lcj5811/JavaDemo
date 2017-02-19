@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * @ClassName com.lee.undoredo.EditableLinkedList
- * @description
+ * @description 撤销恢复操作功能实现
  * @author 凌霄
  * @data 2016年5月31日 上午9:44:08
  */
