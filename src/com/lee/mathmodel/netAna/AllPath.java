@@ -1,4 +1,4 @@
-package com.lee.mathmodel;
+package com.lee.mathmodel.netAna;
 
 import java.io.IOException;
 import java.util.ArrayList;

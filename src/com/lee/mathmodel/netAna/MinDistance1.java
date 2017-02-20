@@ -1,4 +1,4 @@
-package com.lee.mathmodel;
+package com.lee.mathmodel.netAna;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;

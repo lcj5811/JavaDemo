@@ -1,4 +1,4 @@
-package com.lee.mathmodel;
+package com.lee.mathmodel.netAna;
 
 import javax.swing.JOptionPane;
 

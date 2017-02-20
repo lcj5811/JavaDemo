@@ -1,4 +1,4 @@
-package com.lee.mathmodel;
+package com.lee.mathmodel.netAna;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;

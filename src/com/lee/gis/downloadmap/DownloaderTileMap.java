@@ -27,13 +27,15 @@ public class DownloaderTileMap {
 	public static int progress, completeNum, size;
 
 	public static void main(String[] args) {
-		double[] mTopLeftPoint = new double[] { 26.88319, 112.44713 };
-		double[] mBottomRightPoint = new double[] { 26.69839, 112.55836 };
-		int[] mZoomLevel = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
-		int mMapID = 1;
+		double[] mTopLeftPoint = new double[] { 28.16792, 112.97607 };
+		double[] mBottomRightPoint = new double[] { 28.12388, 113.02782 };
+		int[] mZoomLevel = new int[] {
+				// 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+				10, 11, 12, 13, 14, 15, 16, 17 };
+		int mMapID = 2;
 		String mMapName = "MyMap";
 		String mMapTilesPath = "F:/MapTiles/";
-		int mThreadNum = 2;
+		int mThreadNum = 3;
 
 		new DownloaderTileMap(mTopLeftPoint, mBottomRightPoint, mZoomLevel, mMapID, mMapName, mMapTilesPath,
 				mThreadNum);
@@ -120,6 +122,7 @@ public class DownloaderTileMap {
 						p = zm + "/" + x + "/" + reversedY + ".jpg";
 					}
 					loadImage(mURL + p, String.valueOf(y), path);
+					// System.out.println(mURL + p);
 				}
 			}
 		}
@@ -141,6 +144,11 @@ public class DownloaderTileMap {
 			mMapTilesPath += "OpenStreetMap/";
 			mLastName = ".png";
 			mURL = " http://a.tile.opencyclemap.org/cycle/";
+			break;
+		case 2:
+			mMapTilesPath += "Geoserver/";
+			mLastName = ".png";
+			mURL = "http://192.168.1.19:8888/geoserver/gwc/service/tms/1.0.0/cite:changsha@EPSG:900913@jpeg/";
 			break;
 		}
 		for (int zm : mZoomLevel) {
@@ -191,11 +199,11 @@ public class DownloaderTileMap {
 			if (!dir.exists()) {
 				dir.mkdirs();
 			}
-			InputStream mInputStream = new URL(url).openStream();
-			BufferedInputStream in = new BufferedInputStream(mInputStream);
 			String sName = name + mLastName;
 			File img = new File(path + sName);
 			if (!img.exists()) {
+				InputStream mInputStream = new URL(url).openStream();
+				BufferedInputStream in = new BufferedInputStream(mInputStream);
 				BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(img));
 				byte[] buf = new byte[2048];
 				int length = in.read(buf);
