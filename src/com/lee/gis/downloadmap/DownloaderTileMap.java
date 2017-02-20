@@ -2,11 +2,8 @@ package com.lee.gis.downloadmap;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -16,45 +13,78 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class DownloaderTileMap {
-	private int ws;
+	private int mMapID;
+	private final double[] mTopLeftPoint;
+	private final double[] mBottomRightPoint;
+	private int[] mZoomLevel;
+	private String mMapTilesPath;
+	private final String mMapDBName;
 
-	private final double[] TL;
-	private final double[] BR;
-	private int[] z;
-	private final String MN;
-	private ExecutorService threadPool;
-	public static String p, pathname, lastname, maptype, url;
+	private ExecutorService mThreadPool;
+	private int mThreadNum;
+
+	public static String mURL, mLastName;
 	public static int progress, completeNum, size;
 
 	public static void main(String[] args) {
-		double[] aTL = new double[] { 26.88319, 112.44713 };
-		double[] aBR = new double[] { 26.69839, 112.55836 };
-		// new MapDownloader(aTR, aBL, 1, "fushoushan");
-		new DownloaderTileMap(aTL, aBR, 0, "t");
+		double[] mTopLeftPoint = new double[] { 26.88319, 112.44713 };
+		double[] mBottomRightPoint = new double[] { 26.69839, 112.55836 };
+		int[] mZoomLevel = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
+		int mMapID = 1;
+		String mMapName = "MyMap";
+		String mMapTilesPath = "F:/MapTiles/";
+		int mThreadNum = 2;
+
+		new DownloaderTileMap(mTopLeftPoint, mBottomRightPoint, mZoomLevel, mMapID, mMapName, mMapTilesPath,
+				mThreadNum);
 	}
 
-	public DownloaderTileMap(double[] aTL, double[] aBR, int aw, String MapName) {
-		TL = aTL;
-		BR = aBR;
-		ws = aw;
-		MN = MapName;
+	/**
+	 * @param mTopLeftPoint
+	 *            左上角坐标
+	 * @param mBottomRightPoint
+	 *            右下角坐标
+	 * @param mZoomLevel
+	 *            地图缩放级别
+	 * @param mMapID
+	 *            地图类别,0-谷歌,1-OpenStreetMap,2-Geoserver
+	 * @param mMapDBName
+	 *            地图名称
+	 * @param mTilePath
+	 *            瓦片路径
+	 */
+	public DownloaderTileMap(double[] mTopLeftPoint, double[] mBottomRightPoint, int[] mZoomLevel, int mMapID,
+			String mMapDBName, String mMapTilesPath, int mThreadNum) {
+
+		this.mTopLeftPoint = mTopLeftPoint;
+		this.mBottomRightPoint = mBottomRightPoint;
+		this.mMapID = mMapID;
+		this.mZoomLevel = mZoomLevel;
+		this.mMapDBName = mMapDBName;
+		this.mMapTilesPath = mMapTilesPath;
+		this.mThreadNum = mThreadNum;
+
 		onPreExecute();
 		doInBackground();
 	}
 
+	/**
+	 * 监听线程
+	 */
 	protected void doInBackground() {
 		completeNum = 1;
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				while (true) {
-					if (threadPool.isTerminated()) {
+					if (mThreadPool.isTerminated()) {
 						progress = 100;
 						System.out.println("下载完成");
 						try {
-							String name = "F:/test2/" + MN + "_" + maptype
-									+ getTimeName();
-							CompressTileMap.createZip(pathname, name + ".zip");
+							String name = mMapTilesPath + mMapDBName + "_" + getTimeName();
+							// 打包地图瓦片
+							// CompressTileMap.createZip(pathname, name +
+							// ".zip");
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -71,14 +101,14 @@ public class DownloaderTileMap {
 				}
 			}
 		}).start();
-		for (int zm : z) {
-			int[] TRNum = getTileNum(TL[0], TL[1], zm);
-			int[] BLNum = getTileNum(BR[0], BR[1], zm);
+		for (int zm : mZoomLevel) {
+			int[] TRNum = getTileNum(mTopLeftPoint[0], mTopLeftPoint[1], zm);
+			int[] BLNum = getTileNum(mBottomRightPoint[0], mBottomRightPoint[1], zm);
 			for (int x = TRNum[0]; x <= BLNum[0]; ++x) {
-				String path = pathname + zm + "/" + x + "/";
+				String path = mMapTilesPath + zm + "/" + x + "/";
 				for (int y = TRNum[1]; y <= BLNum[1]; ++y) {
 					String p = null;
-					switch (ws) {
+					switch (mMapID) {
 					case 0:
 						p = x + "&y=" + y + "&z=" + zm;
 						break;
@@ -89,39 +119,33 @@ public class DownloaderTileMap {
 						int reversedY = (1 << zm) - y - 1;
 						p = zm + "/" + x + "/" + reversedY + ".jpg";
 					}
-					loadImage(url + p, String.valueOf(y), path);
+					loadImage(mURL + p, String.valueOf(y), path);
 				}
-				// try {
-				// Thread.sleep(200);
-				// } catch (InterruptedException e) {
-				// e.printStackTrace();
-				// }
 			}
 		}
-		threadPool.shutdown();
+		mThreadPool.shutdown();
 	}
 
+	/**
+	 * 下载预处理
+	 */
 	protected void onPreExecute() {
-		threadPool = Executors.newFixedThreadPool(40);
-		switch (ws) {
+		mThreadPool = Executors.newFixedThreadPool(mThreadNum);
+		switch (mMapID) {
 		case 0:
-			pathname = "F:/test3/谷歌卫星图/";
-			lastname = ".jpg";
-			maptype = "GM";
-			url = "http://mt1.google.cn/vt/lyrs=s,r&hl=zh-CN&gl=cn&x=";
-			z = new int[] { 11,13,15,17,19 };
+			mMapTilesPath += "GoogleMap/";
+			mLastName = ".jpg";
+			mURL = "http://mt1.google.cn/vt/lyrs=s,r&hl=zh-CN&gl=cn&x=";
 			break;
 		case 1:
-			pathname = "F:/test2/OSM地形图/";
-			lastname = ".png";
-			maptype = "OSM";
-			url = " http://a.tile.opencyclemap.org/cycle/";
-			z = new int[] { 10, 12, 14, 16, 18, 20 };
+			mMapTilesPath += "OpenStreetMap/";
+			mLastName = ".png";
+			mURL = " http://a.tile.opencyclemap.org/cycle/";
 			break;
 		}
-		for (int zm : z) {
-			int[] TRNum = getTileNum(TL[0], TL[1], zm);
-			int[] BLNum = getTileNum(BR[0], BR[1], zm);
+		for (int zm : mZoomLevel) {
+			int[] TRNum = getTileNum(mTopLeftPoint[0], mTopLeftPoint[1], zm);
+			int[] BLNum = getTileNum(mBottomRightPoint[0], mBottomRightPoint[1], zm);
 			for (int x = TRNum[0]; x <= BLNum[0]; ++x) {
 				for (int y = TRNum[1]; y <= BLNum[1]; ++y) {
 					size++;
@@ -131,6 +155,16 @@ public class DownloaderTileMap {
 		System.out.println("共计" + size);
 	}
 
+	/**
+	 * 下载线程池
+	 * 
+	 * @param url
+	 *            瓦片地址
+	 * @param name
+	 *            地图名称
+	 * @param path
+	 *            地图路径
+	 */
 	public void loadImage(final String url, final String name, final String path) {
 		Runnable runnable = new Runnable() {
 			@Override
@@ -138,9 +172,19 @@ public class DownloaderTileMap {
 				Download(path, url, name);
 			}
 		};
-		threadPool.execute(runnable);
+		mThreadPool.execute(runnable);
 	}
 
+	/**
+	 * 下载瓦片方法
+	 * 
+	 * @param path
+	 *            地图路径
+	 * @param url
+	 *            瓦片地址
+	 * @param name
+	 *            地图名称
+	 */
 	private void Download(String path, String url, String name) {
 		try {
 			File dir = new File(path);
@@ -149,11 +193,10 @@ public class DownloaderTileMap {
 			}
 			InputStream mInputStream = new URL(url).openStream();
 			BufferedInputStream in = new BufferedInputStream(mInputStream);
-			String sName = name + lastname;
+			String sName = name + mLastName;
 			File img = new File(path + sName);
 			if (!img.exists()) {
-				BufferedOutputStream out = new BufferedOutputStream(
-						new FileOutputStream(img));
+				BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(img));
 				byte[] buf = new byte[2048];
 				int length = in.read(buf);
 				while (length != -1) {
@@ -162,7 +205,7 @@ public class DownloaderTileMap {
 				}
 				in.close();
 				out.close();
-//				System.out.println("已下载" + name);
+				// System.out.println("已下载" + name);
 			} else {
 				// System.out.println("已存在" + name);
 			}
@@ -173,14 +216,22 @@ public class DownloaderTileMap {
 		}
 	}
 
-	public static int[] getTileNum(final double lat, final double lon,
-			final int zoom) {
+	/**
+	 * 获取瓦片坐标
+	 * 
+	 * @param lat
+	 *            纬度
+	 * @param lon
+	 *            经度
+	 * @param zoom
+	 *            级别
+	 * @return int[]{X,Y}
+	 */
+	public static int[] getTileNum(final double lat, final double lon, final int zoom) {
 		int xtile = (int) Math.floor((lon + 180) / 360 * (1 << zoom));
 		int ytile = (int) Math
-				.floor((1 - Math.log(Math.tan(Math.toRadians(lat)) + 1
-						/ Math.cos(Math.toRadians(lat)))
-						/ Math.PI)
-						/ 2 * (1 << zoom));
+				.floor((1 - Math.log(Math.tan(Math.toRadians(lat)) + 1 / Math.cos(Math.toRadians(lat))) / Math.PI) / 2
+						* (1 << zoom));
 		if (xtile < 0)
 			xtile = 0;
 		if (xtile >= (1 << zoom))
@@ -192,45 +243,15 @@ public class DownloaderTileMap {
 		return new int[] { xtile, ytile };
 	}
 
+	/**
+	 * 获取系统时间
+	 * 
+	 * @return yyyyMMdd_HHmmss
+	 */
 	public static String getTimeName() {
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");
 		df.setTimeZone(TimeZone.getTimeZone("GMT+08:00"));
 		return (df.format(new Date()));
 	}
 
-	public void savePoint(String Path, String point) {
-		File f = new File(Path);
-		if (!f.exists()) {
-			try {
-				File parent = f.getParentFile();
-				parent.mkdirs();
-				f.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		FileWriter fw = null;
-		BufferedWriter bw = null;
-		try {
-			fw = new FileWriter(f, true);
-			bw = new BufferedWriter(fw);
-			bw.write(point);
-			bw.newLine();
-			bw.flush();
-			fw.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (bw != null) {
-					bw.close();
-				}
-				if (fw != null) {
-					fw.close();
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 }
