@@ -20,5 +20,6 @@
 	<classpathentry kind="lib" path="lib/Stegsolve.jar"/>
 	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.10.jar"/>
+	<classpathentry kind="lib" path="lib/sqlite-jdbc4-3.8.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

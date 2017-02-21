@@ -6,11 +6,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import com.lee.util.SystemUtil;
 
 public class DownloaderTileMap {
 	private int mMapID;
@@ -32,7 +31,7 @@ public class DownloaderTileMap {
 		int[] mZoomLevel = new int[] {
 				// 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
 				10, 11, 12, 13, 14, 15, 16, 17 };
-		int mMapID = 2;
+		int mMapID = 1;
 		String mMapName = "MyMap";
 		String mMapTilesPath = "F:/MapTiles/";
 		int mThreadNum = 3;
@@ -83,7 +82,7 @@ public class DownloaderTileMap {
 						progress = 100;
 						System.out.println("下载完成");
 						try {
-							String name = mMapTilesPath + mMapDBName + "_" + getTimeName();
+							String name = mMapTilesPath + mMapDBName + "_" + SystemUtil.getInstance().getTimeName();
 							// 打包地图瓦片
 							// CompressTileMap.createZip(pathname, name +
 							// ".zip");
@@ -147,7 +146,7 @@ public class DownloaderTileMap {
 			break;
 		case 2:
 			mMapTilesPath += "Geoserver/";
-			mLastName = ".png";
+			mLastName = ".jpg";
 			mURL = "http://192.168.1.19:8888/geoserver/gwc/service/tms/1.0.0/cite:changsha@EPSG:900913@jpeg/";
 			break;
 		}
@@ -249,17 +248,6 @@ public class DownloaderTileMap {
 		if (ytile >= (1 << zoom))
 			ytile = ((1 << zoom) - 1);
 		return new int[] { xtile, ytile };
-	}
-
-	/**
-	 * 获取系统时间
-	 * 
-	 * @return yyyyMMdd_HHmmss
-	 */
-	public static String getTimeName() {
-		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");
-		df.setTimeZone(TimeZone.getTimeZone("GMT+08:00"));
-		return (df.format(new Date()));
 	}
 
 }

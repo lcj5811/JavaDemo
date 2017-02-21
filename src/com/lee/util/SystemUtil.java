@@ -1,4 +1,4 @@
-package com.lee.dealfile;
+package com.lee.util;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,23 +7,29 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.FileChannel;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 import javax.swing.JOptionPane;
 
 /**
- * @ClassName com.lee.dealfile.CopyFile
- * @description
+ * @ClassName com.lee.Util
+ * @description 工具类
  * @author 凌霄
- * @data 2016年9月3日 下午2:25:24
+ * @data 2017年2月20日 下午4:11:37
  */
-public class CopyFile {
-	public static void main(String[] args) {
-		// String srcDirName = "D:/test/";
-		// String destDirName = "D:/test/kml/";
-		// CopyFile.copyDirectory(srcDirName, destDirName, true);
-		String srcFileName = "D:/test/track.kml";
-		String destFileName = "D:/test/kml/track2.kml";
-		CopyFile.copyFile(srcFileName, destFileName, true);
+public class SystemUtil {
+	private SystemUtil() {
+	}
+
+	public static SystemUtil getInstance() {
+		return SingletonHolder.sInstance;
+	}
+
+	private static class SingletonHolder {
+		private static final SystemUtil sInstance = new SystemUtil();
 	}
 
 	private static String MESSAGE = "";
@@ -39,7 +45,7 @@ public class CopyFile {
 	 *            如果目标文件存在，是否覆盖
 	 * @return 如果复制成功返回true，否则返回false
 	 */
-	public static boolean copyFile(String srcFileName, String destFileName, boolean overlay) {
+	public boolean copyFile(String srcFileName, String destFileName, boolean overlay) {
 		File srcFile = new File(srcFileName);
 
 		// 判断源文件是否存在
@@ -113,7 +119,7 @@ public class CopyFile {
 	 *            如果目标目录存在，是否覆盖
 	 * @return 如果复制成功返回true，否则返回false
 	 */
-	public static boolean copyDirectory(String srcDirName, String destDirName, boolean overlay) {
+	public boolean copyDirectory(String srcDirName, String destDirName, boolean overlay) {
 		// 判断源目录是否存在
 		File srcDir = new File(srcDirName);
 		if (!srcDir.exists()) {
@@ -155,11 +161,11 @@ public class CopyFile {
 		for (int i = 0; i < files.length; i++) {
 			// 复制文件
 			if (files[i].isFile()) {
-				flag = CopyFile.copyFile(files[i].getAbsolutePath(), destDirName + files[i].getName(), overlay);
+				flag = copyFile(files[i].getAbsolutePath(), destDirName + files[i].getName(), overlay);
 				if (!flag)
 					break;
 			} else if (files[i].isDirectory()) {
-				flag = CopyFile.copyDirectory(files[i].getAbsolutePath(), destDirName + files[i].getName(), overlay);
+				flag = copyDirectory(files[i].getAbsolutePath(), destDirName + files[i].getName(), overlay);
 				if (!flag)
 					break;
 			}
@@ -171,5 +177,49 @@ public class CopyFile {
 		} else {
 			return true;
 		}
+	}
+
+	/**
+	 * 单线程文件复制最快的方法
+	 * 
+	 * @param source
+	 *            源文件
+	 * @param target
+	 *            目标文件
+	 */
+	public void nioTransferCopy(File source, File target) {
+		FileChannel in = null;
+		FileChannel out = null;
+		FileInputStream inStream = null;
+		FileOutputStream outStream = null;
+		try {
+			inStream = new FileInputStream(source);
+			outStream = new FileOutputStream(target);
+			in = inStream.getChannel();
+			out = outStream.getChannel();
+			in.transferTo(0, in.size(), out);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				inStream.close();
+				in.close();
+				outStream.close();
+				out.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * 获取系统时间
+	 * 
+	 * @return yyyyMMdd_HHmmss
+	 */
+	public String getTimeName() {
+		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");
+		df.setTimeZone(TimeZone.getTimeZone("GMT+08:00"));
+		return (df.format(new Date()));
 	}
 }

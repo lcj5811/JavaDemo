@@ -7,7 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import com.lee.dealfile.CopyFile;
+import com.lee.util.SystemUtil;
 
 public class WriteKml {
 
@@ -28,8 +28,7 @@ public class WriteKml {
 		{
 			try {
 				for (String f_name : names) {
-					// CopyFile.copyFile("D:/test/track.kml", "D:/test/kml/" +
-					// f_name + ".kml", true);
+					SystemUtil.getInstance().copyFile("D:/test/track.kml", "D:/test/kml/" + f_name + ".kml", true);
 					createFile("D:/test/kml/", f_name + ".kml");
 					file_kml = new File("D:/test/kml/" + f_name + ".kml");
 					fw = new FileWriter(file_kml, true);
