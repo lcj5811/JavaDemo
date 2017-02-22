@@ -11,36 +11,48 @@ import java.util.concurrent.Executors;
 
 import com.lee.util.SystemUtil;
 
+/**
+ * @ClassName com.lee.gis.downloadmap.DownloaderTileMap
+ * @description 从网络下载地图瓦片
+ * @author 凌霄
+ * @data 2017年2月20日 下午3:53:36
+ */
 public class DownloaderTileMap {
 	private int mMapID;
 	private final double[] mTopLeftPoint;
 	private final double[] mBottomRightPoint;
 	private int[] mZoomLevel;
 	private String mMapTilesPath;
-	private final String mMapDBName;
+	private String mMapDBPath;
+	private String mMapDBName;
 
 	private ExecutorService mThreadPool;
 	private int mThreadNum;
 
-	public static String mURL, mLastName;
-	public static int progress, completeNum, size;
+	private String mURL, mLastName;
+	private int mProgress, mNewProgress, mCompleteNum, mSize;
+
+	static long start;
+	long end;
 
 	public static void main(String[] args) {
+		start = System.currentTimeMillis();
+
+		int mMapID = 2;
+		String mMapName = "ChangSha";
+		String mMapTilesPath = "F:/MapTiles/";
 		double[] mTopLeftPoint = new double[] { 28.16792, 112.97607 };
 		double[] mBottomRightPoint = new double[] { 28.12388, 113.02782 };
 		int[] mZoomLevel = new int[] {
 				// 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
 				10, 11, 12, 13, 14, 15, 16, 17 };
-		int mMapID = 1;
-		String mMapName = "MyMap";
-		String mMapTilesPath = "F:/MapTiles/";
-		int mThreadNum = 3;
 
-		new DownloaderTileMap(mTopLeftPoint, mBottomRightPoint, mZoomLevel, mMapID, mMapName, mMapTilesPath,
-				mThreadNum);
+		new DownloaderTileMap(mTopLeftPoint, mBottomRightPoint, mZoomLevel, mMapID, mMapName, mMapTilesPath);
 	}
 
 	/**
+	 * 构造方法
+	 * 
 	 * @param mTopLeftPoint
 	 *            左上角坐标
 	 * @param mBottomRightPoint
@@ -55,7 +67,7 @@ public class DownloaderTileMap {
 	 *            瓦片路径
 	 */
 	public DownloaderTileMap(double[] mTopLeftPoint, double[] mBottomRightPoint, int[] mZoomLevel, int mMapID,
-			String mMapDBName, String mMapTilesPath, int mThreadNum) {
+			String mMapDBName, String mMapTilesPath) {
 
 		this.mTopLeftPoint = mTopLeftPoint;
 		this.mBottomRightPoint = mBottomRightPoint;
@@ -63,7 +75,7 @@ public class DownloaderTileMap {
 		this.mZoomLevel = mZoomLevel;
 		this.mMapDBName = mMapDBName;
 		this.mMapTilesPath = mMapTilesPath;
-		this.mThreadNum = mThreadNum;
+		this.mMapDBPath = mMapTilesPath;
 
 		onPreExecute();
 		doInBackground();
@@ -73,29 +85,36 @@ public class DownloaderTileMap {
 	 * 监听线程
 	 */
 	protected void doInBackground() {
-		completeNum = 1;
+		mCompleteNum = 1;
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				while (true) {
 					if (mThreadPool.isTerminated()) {
-						progress = 100;
+						mProgress = 100;
 						System.out.println("下载完成");
+						end = System.currentTimeMillis();
+						System.out.println("下载耗时："+SystemUtil.getInstance().getRunTime(start, end));
 						try {
-							String name = mMapTilesPath + mMapDBName + "_" + SystemUtil.getInstance().getTimeName();
-							// 打包地图瓦片
-							// CompressTileMap.createZip(pathname, name +
-							// ".zip");
+							// 打包地图瓦片为ZIP,已经弃用
+							// CompressTileMap.createZip(mMapTilesPath,
+							// mMapDBName + ".zip");
+							// 打包地图瓦片为SQLite
+							StorageTilesInDB.main(new String[] { mMapTilesPath, mMapDBPath, mMapDBName, mLastName,
+									String.valueOf(mSize) });
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
 						break;
 					} else {
-						progress = (int) (Float.valueOf(completeNum) / size * 100);
-						System.out.println(progress + "%");
+						mProgress = (int) (Float.valueOf(mCompleteNum) / mSize * 100);
+						if (mProgress != mNewProgress) {
+							System.out.println(mProgress + "%");
+							mNewProgress = mProgress;
+						}
 					}
 					try {
-						Thread.sleep(2000);
+						Thread.sleep(1500);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -132,20 +151,22 @@ public class DownloaderTileMap {
 	 * 下载预处理
 	 */
 	protected void onPreExecute() {
-		mThreadPool = Executors.newFixedThreadPool(mThreadNum);
 		switch (mMapID) {
 		case 0:
-			mMapTilesPath += "GoogleMap/";
+			mThreadNum = 4;
+			mMapTilesPath += "GoogleMap/" + mMapDBName + "/";
 			mLastName = ".jpg";
 			mURL = "http://mt1.google.cn/vt/lyrs=s,r&hl=zh-CN&gl=cn&x=";
 			break;
 		case 1:
-			mMapTilesPath += "OpenStreetMap/";
+			mThreadNum = 4;
+			mMapTilesPath += "OpenStreetMap/" + mMapDBName + "/";
 			mLastName = ".png";
 			mURL = " http://a.tile.opencyclemap.org/cycle/";
 			break;
 		case 2:
-			mMapTilesPath += "Geoserver/";
+			mThreadNum = 10;
+			mMapTilesPath += "Geoserver/" + mMapDBName + "/";
 			mLastName = ".jpg";
 			mURL = "http://192.168.1.19:8888/geoserver/gwc/service/tms/1.0.0/cite:changsha@EPSG:900913@jpeg/";
 			break;
@@ -155,11 +176,12 @@ public class DownloaderTileMap {
 			int[] BLNum = getTileNum(mBottomRightPoint[0], mBottomRightPoint[1], zm);
 			for (int x = TRNum[0]; x <= BLNum[0]; ++x) {
 				for (int y = TRNum[1]; y <= BLNum[1]; ++y) {
-					size++;
+					mSize++;
 				}
 			}
 		}
-		System.out.println("共计" + size);
+		mThreadPool = Executors.newFixedThreadPool(mThreadNum);
+		System.out.println("共计" + mSize);
 	}
 
 	/**
@@ -216,7 +238,7 @@ public class DownloaderTileMap {
 			} else {
 				// System.out.println("已存在" + name);
 			}
-			completeNum++;
+			mCompleteNum++;
 		} catch (Exception e) {
 			Download(path, url, name);
 			System.out.println("重新下载" + name);

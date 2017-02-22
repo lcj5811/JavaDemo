@@ -222,4 +222,17 @@ public class SystemUtil {
 		df.setTimeZone(TimeZone.getTimeZone("GMT+08:00"));
 		return (df.format(new Date()));
 	}
+
+	public String getRunTime(long start, long end) {
+		long time = end - start;
+		if (time < 1000) {
+			return time + "毫秒";
+		} else if (time > 1000 && time < 60000) {
+			return time / 1000 + "秒";
+		} else if (time > 60000 && time < 3600000) {
+			return time / 60000 + "分";
+		} else {
+			return time / 3600000 + "小时";
+		}
+	}
 }

@@ -15,6 +15,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * @ClassName com.lee.gis.downloadmap.CompressTileMap
+ * @description 将瓦片压缩为ZIP
+ * @author 凌霄
+ * @data 2017年2月20日 下午3:53:36
+ */
 public class CompressTileMap {
 	/**
 	 * zip压缩功能测试. 将d:\\temp\\zipout目录下的所有文件连同子目录压缩到d:\\temp\\out.zip.
@@ -32,14 +38,12 @@ public class CompressTileMap {
 		// releaseZipToFile("F:/t/8888.zip", "F:/t");
 	}
 
-	public static void createZip(String baseDir, String objFileName)
-			throws Exception {
+	public static void createZip(String baseDir, String objFileName) throws Exception {
 		File folderObject = new File(baseDir);
 		if (folderObject.exists()) {
 			List<File> fileList = getSubFiles(new File(baseDir));
 			// 压缩文件名
-			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(
-					objFileName));
+			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(objFileName));
 			ZipEntry ze = null;
 			byte[] buf = new byte[1024];
 			int readLen = 0;
@@ -106,8 +110,7 @@ public class CompressTileMap {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("rawtypes")
-	public static void releaseZipToFile(String sourceZip, String outFileName)
-			throws IOException {
+	public static void releaseZipToFile(String sourceZip, String outFileName) throws IOException {
 		ZipFile zfile = new ZipFile(sourceZip);
 		Enumeration zList = zfile.entries();
 		ZipEntry ze = null;
@@ -119,8 +122,8 @@ public class CompressTileMap {
 				continue;
 			}
 			// 以ZipEntry为参数得到一个InputStream，并写到OutputStream中
-			OutputStream os = new BufferedOutputStream(new FileOutputStream(
-					getRealFileName(outFileName, ze.getName())));
+			OutputStream os = new BufferedOutputStream(
+					new FileOutputStream(getRealFileName(outFileName, ze.getName())));
 			InputStream is = new BufferedInputStream(zfile.getInputStream(ze));
 			int readLen = 0;
 			while ((readLen = is.read(buf, 0, 1024)) != -1) {
