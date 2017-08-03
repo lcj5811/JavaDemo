@@ -10,7 +10,7 @@ public class LandApply {
 		System.out.println("===start===");
 		switch (Window.whichDialog) {
 		case 1:
-			MinDistance0.main(args);
+			MinDistance.main(args);
 			break;
 
 		}

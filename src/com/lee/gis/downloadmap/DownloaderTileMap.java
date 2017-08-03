@@ -4,16 +4,17 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.lee.util.SystemUtil;
 
 /**
- * @ClassName com.lee.gis.downloadmap.DownloaderTileMap
- * @description 从网络下载地图瓦片
+ * @description 从网络或本地下载地图瓦片
  * @author 凌霄
  * @data 2017年2月20日 下午3:53:36
  */
@@ -25,11 +26,17 @@ public class DownloaderTileMap {
 	private String mMapTilesPath;
 	private String mMapDBPath;
 	private String mMapDBName;
+	private String mMapEndName;
+	private String mName_cn;
+	private String mMin_z;
+	private String mMax_z;
+	private String mCenterPoint;
+	private String mUrlType;
 
 	private ExecutorService mThreadPool;
 	private int mThreadNum;
 
-	private String mURL, mLastName;
+	private String mURL, mLastName, mLayerName, mIP;
 	private int mProgress, mNewProgress, mCompleteNum, mSize;
 
 	static long start;
@@ -37,17 +44,62 @@ public class DownloaderTileMap {
 
 	public static void main(String[] args) {
 		start = System.currentTimeMillis();
+		// 下载路径
+		String mMapTilesPath = "E:/MapTiles/";
+		//本地目录&在线地图
+		boolean isOnlineFile = false;
+		// MapProviderName
+		String mMapName = "bhq";
 
-		int mMapID = 2;
-		String mMapName = "ChangSha";
-		String mMapTilesPath = "F:/MapTiles/";
-		double[] mTopLeftPoint = new double[] { 28.16792, 112.97607 };
-		double[] mBottomRightPoint = new double[] { 28.12388, 113.02782 };
-		int[] mZoomLevel = new int[] {
-				// 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-				10, 11, 12, 13, 14, 15, 16, 17 };
+		String mEndName = ".png";
 
-		new DownloaderTileMap(mTopLeftPoint, mBottomRightPoint, mZoomLevel, mMapID, mMapName, mMapTilesPath);
+		String mCenterPoint = "";
+
+		String mName_cn = "保护区";
+
+		String mMin_z = "2";
+
+		String mMax_z = "12";
+
+		String mUrlType = "Geoserver";
+		
+		String mFolderName = "raster_bhq1";
+
+		if (isOnlineFile) {
+			// 地图类别,0-谷歌,1-OpenStreetMap,2-Geoserver
+			int mMapID = 2;
+			// 地图中文名称
+			// Geoserver中图层名称
+			String mLayerName = "raster:UTM";
+			// ip地址
+			String mIP = "localhost:8080";
+			// 左上角坐标
+			double[] mTopLeftPoint = new double[] { 28.143727324568584, 112.98065063989563 };
+			// 右下角坐标
+			double[] mBottomRightPoint = new double[] { 28.13047001938938, 113.00207050329387 };
+			// 中心坐标
+			mCenterPoint = (mTopLeftPoint[0] + mBottomRightPoint[0]) / 2.0 + ","
+					+ (mTopLeftPoint[1] + mBottomRightPoint[1]) / 2.0;
+			// 下载级别
+			int[] mZoomLevel = new int[] {
+					/* 0, 1, 2, 3, 4, 5, 6 */
+					10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+			mMin_z = mZoomLevel[0] + "";
+			mMax_z = mZoomLevel[mZoomLevel.length - 1] + "";
+			new DownloaderTileMap(mTopLeftPoint, mBottomRightPoint, mZoomLevel, mMapID, mLayerName, mIP, mMapName,
+					mMapTilesPath, mEndName, mName_cn, mMin_z, mMax_z, mCenterPoint, mUrlType).start();
+		} else {
+			// Geoserver路径+切片路径
+			String mLocalFile = "D:\\Program Files (x86)\\GeoServer 2.7.0\\data_dir\\gwc\\"+mFolderName;
+			String mSize = SystemUtil.getInstance().getFileNum(new File(mLocalFile)) + "";
+			System.out.println("共计" + mSize + "个文件");
+			try {
+				new StorageTilesInDB(mLocalFile, mMapTilesPath, mMapName, mSize, mEndName, mName_cn, mMin_z, mMax_z,
+						mCenterPoint, mUrlType);
+			} catch (IOException | SQLException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -67,16 +119,27 @@ public class DownloaderTileMap {
 	 *            瓦片路径
 	 */
 	public DownloaderTileMap(double[] mTopLeftPoint, double[] mBottomRightPoint, int[] mZoomLevel, int mMapID,
-			String mMapDBName, String mMapTilesPath) {
+			String mLayerName, String mIP, String mMapDBName, String mMapTilesPath, String mEndName, String mName_cn,
+			String mMin_z, String mMax_z, String mCenterPoint, String mURLType) {
 
 		this.mTopLeftPoint = mTopLeftPoint;
 		this.mBottomRightPoint = mBottomRightPoint;
 		this.mMapID = mMapID;
+		this.mLayerName = mLayerName;
+		this.mIP = mIP;
 		this.mZoomLevel = mZoomLevel;
 		this.mMapDBName = mMapDBName;
 		this.mMapTilesPath = mMapTilesPath;
 		this.mMapDBPath = mMapTilesPath;
+		this.mMapEndName = mEndName;
+		this.mName_cn = mName_cn;
+		this.mMin_z = mMin_z;
+		this.mMax_z = mMax_z;
+		this.mCenterPoint = mCenterPoint;
+		this.mUrlType = mURLType;
+	}
 
+	public void start() {
 		onPreExecute();
 		doInBackground();
 	}
@@ -94,14 +157,14 @@ public class DownloaderTileMap {
 						mProgress = 100;
 						System.out.println("下载完成");
 						end = System.currentTimeMillis();
-						System.out.println("下载耗时："+SystemUtil.getInstance().getRunTime(start, end));
+						System.out.println("下载耗时：" + SystemUtil.getInstance().getRunTime(start, end));
 						try {
 							// 打包地图瓦片为ZIP,已经弃用
 							// CompressTileMap.createZip(mMapTilesPath,
 							// mMapDBName + ".zip");
 							// 打包地图瓦片为SQLite
-							StorageTilesInDB.main(new String[] { mMapTilesPath, mMapDBPath, mMapDBName, mLastName,
-									String.valueOf(mSize) });
+							new StorageTilesInDB(mMapTilesPath, mMapDBPath, mMapDBName, mMapDBName, mLastName,
+									String.valueOf(mSize), mName_cn, mMin_z, mMax_z, mCenterPoint);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -137,7 +200,7 @@ public class DownloaderTileMap {
 						break;
 					case 2:
 						int reversedY = (1 << zm) - y - 1;
-						p = zm + "/" + x + "/" + reversedY + ".jpg";
+						p = zm + "/" + x + "/" + reversedY + mMapEndName;
 					}
 					loadImage(mURL + p, String.valueOf(y), path);
 					// System.out.println(mURL + p);
@@ -155,7 +218,7 @@ public class DownloaderTileMap {
 		case 0:
 			mThreadNum = 4;
 			mMapTilesPath += "GoogleMap/" + mMapDBName + "/";
-			mLastName = ".jpg";
+			mLastName = mMapEndName;
 			mURL = "http://mt1.google.cn/vt/lyrs=s,r&hl=zh-CN&gl=cn&x=";
 			break;
 		case 1:
@@ -167,8 +230,10 @@ public class DownloaderTileMap {
 		case 2:
 			mThreadNum = 10;
 			mMapTilesPath += "Geoserver/" + mMapDBName + "/";
-			mLastName = ".jpg";
-			mURL = "http://192.168.1.19:8888/geoserver/gwc/service/tms/1.0.0/cite:changsha@EPSG:900913@jpeg/";
+			mLastName = mMapEndName;
+			// mURL =
+			// "http://192.168.1.19:8888/geoserver/gwc/service/tms/1.0.0/cite:changsha@EPSG:900913@jpeg/";
+			mURL = "http://" + mIP + "/geoserver/gwc/service/tms/1.0.0/" + mLayerName + "@EPSG:900913@jpeg/";
 			break;
 		}
 		for (int zm : mZoomLevel) {

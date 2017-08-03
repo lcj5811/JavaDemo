@@ -18,7 +18,7 @@ public class AllPath_v0 {
 	int[][] maze = new int[size][size];
 
 	// 存放搜索时经过路径的点
-	List<Integer> path = new ArrayList();
+	List<Integer> path = new ArrayList<Integer>();
 	int id = 0;
 
 	public AllPath_v0() {
@@ -46,7 +46,7 @@ public class AllPath_v0 {
 		for (int i = 0, rows = lines.length; i < rows; ++i) {
 			x = lines[i][0] - 1;
 			y = lines[i][1] - 1;
-			maze[x][y] = maze[y][x] = lines[i][3];
+			maze[x][y] = maze[y][x] = lines[i][2];
 		}
 		// 打印出对称矩阵
 		System.out.println("源数据：");
@@ -97,7 +97,7 @@ public class AllPath_v0 {
 
 	public static void main(String[] args) {
 		AllPath_v0 instance = new AllPath_v0();
-		int start = 1, end = 11;
+		int start = 5, end = 10;
 		instance.pass(start - 1, end - 1);
 		System.out.println("************over************");
 	}

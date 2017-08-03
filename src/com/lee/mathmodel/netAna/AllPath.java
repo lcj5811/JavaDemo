@@ -73,17 +73,17 @@ public class AllPath {
 			}
 		}
 
-		String txtFileName = MinDistance0.getSystemTime("_全部路径") + ".txt";
+		String txtFileName = MinDistance.getSystemTime("_全部路径") + ".txt";
 
-		MinDistance0.createFile(MinDistance0.mOutputFileDir, txtFileName);
+		MinDistance.createFile(MinDistance.mOutputFileDir, txtFileName);
 
-		MinDistance0.writeTxt(MinDistance0.mOutputFileDir + "//" + txtFileName, mAllPath);
+		MinDistance.writeTxt(MinDistance.mOutputFileDir + "//" + txtFileName, mAllPath);
 
-		String txtFileName2 = MinDistance0.getSystemTime("_最短路径") + ".txt";
+		String txtFileName2 = MinDistance.getSystemTime("_最短路径") + ".txt";
 
-		MinDistance0.createFile(MinDistance0.mOutputFileDir, txtFileName2);
+		MinDistance.createFile(MinDistance.mOutputFileDir, txtFileName2);
 
-		MinDistance0.writeTxt(MinDistance0.mOutputFileDir + "//" + txtFileName2, mMinPath);
+		MinDistance.writeTxt(MinDistance.mOutputFileDir + "//" + txtFileName2, mMinPath);
 
 		// Window.inTable("全部路径输出成功：" + MinDistance0.mOutputFileDir + "//" +
 		// txtFileName);

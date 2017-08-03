@@ -16,8 +16,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 /**
- * @ClassName com.lee.gis.downloadmap.CompressTileMap
- * @description 将瓦片压缩为ZIP
+ * @description 将瓦片压缩为ZIP，已弃用
  * @author 凌霄
  * @data 2017年2月20日 下午3:53:36
  */

@@ -12,15 +12,18 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.poi.ss.formula.ptg.StringPtg;
+
 import com.lee.gis.compresstile.FileOperator;
 import com.lee.gis.downloadmap.SQLiteConst;
+import com.lee.gis.downloadmap.StorageTilesInDB.tile;
 
 /**
- * 
  * @ClassName: SQLiteUtil
  * @Description: SQLite数据库的工具类
  * @author 苦丁茶
@@ -69,7 +72,7 @@ public class SQLiteUtil {
 		try {
 			String url = "jdbc:sqlite:" + dbPath;
 			conn = DriverManager.getConnection(url);
-//			System.out.println("连接SQLite数据库成功");
+			// System.out.println("连接SQLite数据库成功");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("连接SQLite数据库失败");
@@ -110,20 +113,61 @@ public class SQLiteUtil {
 	 * 
 	 * @throws IOException
 	 */
-	public boolean insertTableData(String sql, long key, String provider, byte[] mByte) throws IOException {
+	public boolean insertTilesData(String sql, ArrayList<tile> key, String provider) throws IOException {
 		int result = 0;
 		PreparedStatement pstmt = null;
 		try {
 			// 更改JDBC事务的默认提交方式
-			// conn.setAutoCommit(false);
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setLong(1, key);
-			pstmt.setString(2, provider);
-			ByteArrayInputStream b = new ByteArrayInputStream(mByte);
-			pstmt.setBinaryStream(3, b, b.available());
-			b.close();
-			result = pstmt.executeUpdate();
-			// conn.commit(); // 提交JDBC事务
+			for (int i = 0; i < key.size(); i++) {
+				pstmt.setLong(1, key.get(i).getKey());
+				pstmt.setString(2, provider);
+				ByteArrayInputStream b = new ByteArrayInputStream(key.get(i).getBytes());
+				pstmt.setBinaryStream(3, b, b.available());
+				b.close();
+				pstmt.addBatch();
+			}
+			conn.setAutoCommit(false);
+			int[] ret = pstmt.executeBatch();
+			pstmt.clearBatch();
+			conn.commit(); // 提交JDBC事务
+			// conn.setAutoCommit(true); // 恢复JDBC事务的默认提交方式
+		} catch (SQLException eSQL) {
+			try {
+				conn.rollback(); // 回滚JDBC事务
+			} catch (SQLException eRollback) {
+				eRollback.printStackTrace();
+			}
+			eSQL.printStackTrace();
+		} finally {
+			releaseResource(pstmt, null, null);
+		}
+		if (result > 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * 插入瓦片数据
+	 * 
+	 * @throws IOException
+	 */
+	public boolean insertData(String sql, String[] value) throws IOException {
+		int result = 0;
+		PreparedStatement pstmt = null;
+		try {
+			// 更改JDBC事务的默认提交方式
+			pstmt = conn.prepareStatement(sql);
+			for (int i = 0; i < value.length; i++) {
+				pstmt.setString(i+1, value[i]);
+			}
+			pstmt.addBatch();
+			conn.setAutoCommit(false);
+			int[] ret = pstmt.executeBatch();
+			pstmt.clearBatch();
+			conn.commit(); // 提交JDBC事务
 			// conn.setAutoCommit(true); // 恢复JDBC事务的默认提交方式
 		} catch (SQLException eSQL) {
 			try {

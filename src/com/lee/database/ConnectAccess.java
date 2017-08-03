@@ -28,12 +28,12 @@ public class ConnectAccess {
 	public void ConnectAccessFile() throws Exception {
 		Class.forName("sun.jdbc.odbc.JdbcOdbcDriver");
 
-		String dbur1 = "jdbc:odbc:driver={Microsoft Access Driver (*.mdb)};DBQ=d://a1.mdb";
+		String dbur1 = "jdbc:odbc:driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=D:\\student.accdb";
 		Connection conn = DriverManager.getConnection(dbur1, "username", "password");
 		Statement stmt = conn.createStatement();
-		ResultSet rs = stmt.executeQuery("select * from Table1");
+		ResultSet rs = stmt.executeQuery("select * from Question");
 		while (rs.next()) {
-			System.out.println(rs.getString(1));
+			System.out.println(rs.getString(3));
 		}
 		rs.close();
 		stmt.close();

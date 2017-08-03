@@ -13,7 +13,7 @@ public class WriteKml {
 
 	public static void main(String arg[]) {
 
-		File file = new File("D:/test/track");
+		File file = new File("C:\\Users\\Lee\\Desktop\\track\\线");
 		final String names[] = file.list();
 
 		String a[] = null;
@@ -28,16 +28,17 @@ public class WriteKml {
 		{
 			try {
 				for (String f_name : names) {
-					SystemUtil.getInstance().copyFile("D:/test/track.kml", "D:/test/kml/" + f_name + ".kml", true);
-					createFile("D:/test/kml/", f_name + ".kml");
-					file_kml = new File("D:/test/kml/" + f_name + ".kml");
+					// SystemUtil.getInstance().copyFile("D:/test/track.kml",
+					// "D:/test/kml/" + f_name + ".kml", true);
+					createFile("C:\\Users\\Lee\\Desktop\\track\\", f_name + ".kml");
+					file_kml = new File("C:\\Users\\Lee\\Desktop\\track\\" + f_name + ".kml");
 					fw = new FileWriter(file_kml, true);
 					fr = new FileReader(file_kml);
 					br = new BufferedReader(fr);
 					bw = new BufferedWriter(fw);
 					String value_gj = "track";
 					System.out.println(f_name);
-					f_dat = new File("D:/test/track/" + f_name);
+					f_dat = new File("C:\\Users\\Lee\\Desktop\\track\\线\\" + f_name);
 					fr_gj = new FileReader(f_dat);
 					br_gj = new BufferedReader(fr_gj);
 
@@ -51,6 +52,7 @@ public class WriteKml {
 					while (value_gj != null) {
 						value_gj = br_gj.readLine();
 						if (value_gj != null) {
+							System.out.println(value_gj);
 							a = value_gj.split(",");
 							double[] pt = { Double.valueOf(a[0]), Double.valueOf(a[1]) };
 							// System.out.println(pt);

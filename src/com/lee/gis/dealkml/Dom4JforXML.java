@@ -138,7 +138,6 @@ public class Dom4JforXML {
 		XMLWriter writer = new XMLWriter(new OutputStreamWriter(
 				new FileOutputStream(new File("C:\\Users\\Lee\\Desktop\\dom4jForJavaXML\\dom4j\\s1.xml")), "UTF-8"),
 				format);
-
 		// 写入新文件
 		writer.write(document);
 		writer.flush();

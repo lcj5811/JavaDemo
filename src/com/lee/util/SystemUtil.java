@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -228,11 +229,119 @@ public class SystemUtil {
 		if (time < 1000) {
 			return time + "毫秒";
 		} else if (time > 1000 && time < 60000) {
-			return time / 1000 + "秒";
+			return time / 1000.0 + "秒";
 		} else if (time > 60000 && time < 3600000) {
-			return time / 60000 + "分";
+			return time / 60000.0 + "分";
 		} else {
-			return time / 3600000 + "小时";
+			return time / 3600000.0 + "小时";
 		}
 	}
+
+	/**
+	 * 获取单个文件大小
+	 * 
+	 * @param f
+	 *            单个文件
+	 * @return
+	 * @throws Exception
+	 */
+	public long getFileSizes(File f) throws Exception {
+		long s = 0;
+		if (f.exists()) {
+			FileInputStream fis = null;
+			fis = new FileInputStream(f);
+			s = fis.available();
+			fis.close();
+		}
+		return s;
+	}
+
+	/**
+	 * 获取文件夹总大小
+	 * 
+	 * @param f
+	 *            文件夹
+	 * @return
+	 * @throws Exception
+	 */
+	public long getFileSize(File f) throws Exception {
+		long size = 0;
+		File flist[] = f.listFiles();
+		for (int i = 0; i < flist.length; i++) {
+			if (flist[i].isDirectory()) {
+				size = size + getFileSize(flist[i]);
+			} else {
+				size = size + flist[i].length();
+			}
+		}
+		return size;
+	}
+
+	/**
+	 * 获取文件个数
+	 * 
+	 * @param f
+	 *            文件夹
+	 * @return
+	 */
+	public long getFileNum(File f) {// 递归求取目录文件个数
+		long size = 0;
+		File flist[] = f.listFiles();
+		size = flist.length;
+		for (int i = 0; i < flist.length; i++) {
+			if (flist[i].isDirectory()) {
+				size = size + getFileNum(flist[i]);
+				size--;
+			}
+		}
+		return size;
+	}
+
+	/**
+	 * 获取路径下下所有文件大小
+	 * 
+	 * @param filesPath
+	 *            文件路径
+	 * @return
+	 * @throws Exception
+	 */
+	public String[] getFilesSizeNum(String filesPath) throws Exception {
+		return new String[] { getFormatSize(getFileSize(new File(filesPath))),
+				getFileNum(new File(filesPath)) + "个文件" };
+	}
+
+	/**
+	 * 格式化单位
+	 * 
+	 * @param size
+	 *            Byte
+	 * @return
+	 */
+	public String getFormatSize(double size) {
+		double kiloByte = size / 1024;
+		if (kiloByte < 1) {
+			return size + "B";
+		}
+
+		double megaByte = kiloByte / 1024;
+		if (megaByte < 1) {
+			BigDecimal result1 = new BigDecimal(Double.toString(kiloByte));
+			return result1.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString() + "KB";
+		}
+
+		double gigaByte = megaByte / 1024;
+		if (gigaByte < 1) {
+			BigDecimal result2 = new BigDecimal(Double.toString(megaByte));
+			return result2.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString() + "MB";
+		}
+
+		double teraBytes = gigaByte / 1024;
+		if (teraBytes < 1) {
+			BigDecimal result3 = new BigDecimal(Double.toString(gigaByte));
+			return result3.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString() + "GB";
+		}
+		BigDecimal result4 = new BigDecimal(teraBytes);
+		return result4.setScale(2, BigDecimal.ROUND_HALF_UP).toPlainString() + "TB";
+	}
+
 }

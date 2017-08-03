@@ -6,22 +6,23 @@ import java.util.List;
 /**
  * 算法来源：http://www.cnblogs.com/skywang12345/p/3711516.html
  * 备注：若点的数量过多且网络结构复杂，最有可能出现OOM内存溢出
+ * 
  * @ClassName csuft.ygzx.path DJSTL
- * @Description: 求某一点至其它点的最短路径、所经过的点 
- * @author DZ.Yang 
- * @date 2016年11月28日 上午12:37:32 
+ * @Description: 求某一点至其它点的最短路径、所经过的点
+ * @author DZ.Yang
+ * @date 2016年11月28日 上午12:37:32
  * @version V1.0
  */
 public class DJSTL {
-	//无效值
+	// 无效值
 	private final int INF = Integer.MAX_VALUE;
-	//网络结构
+	// 网络结构
 	private int[][] netWork = new int[][] { //
-			{ INF, 8, 32, INF, INF, INF },//
-			{ 8, INF, 9, 15, INF, INF },//
-			{ 32, 9, INF, 6, 13, INF },//
-			{ INF, 15, 6, INF, 7, 1 },//
-			{ INF, INF, 13, 7, INF, 6 },//
+			{ INF, 8, 32, INF, INF, INF }, //
+			{ 8, INF, 9, 15, INF, INF }, //
+			{ 32, 9, INF, 6, 13, INF }, //
+			{ INF, 15, 6, INF, 7, 1 }, //
+			{ INF, INF, 13, 7, INF, 6 }, //
 			{ INF, INF, INF, 1, 6, INF },//
 	};
 
@@ -89,6 +90,7 @@ public class DJSTL {
 
 	/**
 	 * 补全路径（在前一个点的路径基础上，补全连接的点，得到这个点的路径）
+	 * 
 	 * @param pathArray
 	 * @param k
 	 * @return List
