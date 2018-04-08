@@ -20,8 +20,7 @@ public class CoordinateConversion {
 	 *             Num 目标坐标系
 	 * @return: void
 	 */
-
-	public static void GeodeticForGauss(double B, double L, int type, int Num) {
+	public static void Geodetic2Gauss(double B, double L, int type, int Num) {
 
 		TuoQiuJiChun tuoQiuJiChun = null;
 
@@ -101,7 +100,7 @@ public class CoordinateConversion {
 	 *             beltNum 带号
 	 * @return: void
 	 */
-	public static void GaussForGeodetic(double X, double Y, int type, int Num, double beltNum) {
+	public static void Gauss2Geodetic(double X, double Y, int type, int Num, double beltNum) {
 
 		double Y1 = Y - 500000;
 
@@ -169,7 +168,7 @@ public class CoordinateConversion {
 	public static void main(String[] args) {
 		// System.err.println(Math.ceil(19776507.566 / 1000000));
 		// 38479507.695
-		GaussForGeodetic(3025597.775, 776510.617, 6, 54, 19);
+		Gauss2Geodetic(3025597.775, 776510.617, 6, 54, 19);
 	}
 
 }

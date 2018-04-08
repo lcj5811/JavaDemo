@@ -11,7 +11,7 @@ import java.util.List;
  * @data 2016年5月31日 上午9:44:08
  */
 public class EditableLinkedList<T> {
-	
+
 	// 主列表
 	private LinkedList<T> primaryList = new LinkedList<T>();
 

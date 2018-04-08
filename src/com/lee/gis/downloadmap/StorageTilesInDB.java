@@ -7,15 +7,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.junit.experimental.theories.Theories;
-
 import com.lee.util.SystemUtil;
-import com.opensymphony.xwork2.util.Key;
 
 /**
  * @ClassName com.lee.gis.downloadmap.StorageTilesInDB
@@ -81,7 +76,7 @@ public class StorageTilesInDB {
 		this.mLastName = lastName;
 		this.mSize = Integer.valueOf(mSize);
 		this.mLocalFile = false;
-		String sql = "insert into metadata (name_cn,name_en,min_z,max_z,format,url,cp) values (?,?,?,?,?,?,?) ";
+		String sql = "insert into metadata (name_cn,name_en,min_z,max_z,format,urltype,cp) values (?,?,?,?,?,?,?) ";
 		SQLiteUtil.getInstance().insertData(sql,
 				new String[] { name_cn, dbName, min_z, max_z, lastName.substring(1), urltype, cp });
 		doInBackground(tilesPath);

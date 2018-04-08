@@ -9,7 +9,6 @@
 	<classpathentry kind="lib" path="lib/core.jar"/>
 	<classpathentry kind="lib" path="lib/mediautil.jar"/>
 	<classpathentry kind="lib" path="lib/xwork-core-2.3.20.jar"/>
-	<classpathentry kind="lib" path="lib/metadata-extractor-2.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/poi-3.14-20160307.jar"/>
 	<classpathentry kind="lib" path="lib/poi-examples-3.14-20160307.jar"/>
 	<classpathentry kind="lib" path="lib/poi-excelant-3.14-20160307.jar"/>
@@ -21,5 +20,7 @@
 	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.10.jar"/>
 	<classpathentry kind="lib" path="lib/sqlite-jdbc4-3.8.2.jar"/>
+	<classpathentry kind="lib" path="lib/metadata-extractor-2.9.1.jar"/>
+	<classpathentry kind="lib" path="lib/xmpcore-5.1.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
